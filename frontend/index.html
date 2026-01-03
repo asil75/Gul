@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Gul Mini App</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <h1>Gul</h1>
+
+    <div id="status" class="card">Загрузка...</div>
+
+    <div id="reg" class="card hidden">
+      <h2>Регистрация</h2>
+      <label>Роль
+        <select id="role">
+          <option value="shop">Магазин</option>
+          <option value="courier">Курьер</option>
+        </select>
+      </label>
+
+      <div class="row">
+        <button id="btnContact">Подтвердить телефон</button>
+      </div>
+
+      <label>Телефон (если не подтвердили)
+        <input id="phone" placeholder="+7..." />
+      </label>
+
+      <div class="row">
+        <button id="btnRegister">Сохранить</button>
+      </div>
+    </div>
+
+    <div id="app" class="card hidden">
+      <h2>Заказы</h2>
+      <div class="row">
+        <button id="btnReload">Обновить</button>
+        <button id="btnNew" class="hidden">Новый заказ</button>
+      </div>
+      <pre id="orders"></pre>
+
+      <div id="newOrder" class="hidden">
+        <h3>Новый заказ</h3>
+        <input id="from_address" placeholder="Адрес отправителя" />
+        <input id="shop_contact" placeholder="Контакт магазина" />
+        <input id="to_address" placeholder="Адрес клиента" />
+        <input id="client_name" placeholder="Имя клиента" />
+        <input id="client_phone" placeholder="Телефон клиента" />
+        <input id="price" placeholder="Цена" />
+        <button id="btnCreate">Создать</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <small>Backend URL задаётся в <code>config.js</code> (после деплоя Render).</small>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

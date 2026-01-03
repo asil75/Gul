@@ -1,0 +1,8 @@
+body { font-family: system-ui, Arial; margin: 0; background: #0f0f12; color: #fff; }
+.wrap { max-width: 720px; margin: 0 auto; padding: 16px; }
+.card { background: #1b1b22; padding: 12px; border-radius: 12px; margin: 12px 0; }
+.hidden { display: none; }
+input, select { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #333; background: #111; color: #fff; margin-top: 6px; }
+button { padding: 10px 12px; border-radius: 10px; border: 0; background: #2a5fff; color: #fff; cursor: pointer; }
+.row { display: flex; gap: 8px; margin-top: 10px; }
+pre { white-space: pre-wrap; background: #111; padding: 10px; border-radius: 10px; }
