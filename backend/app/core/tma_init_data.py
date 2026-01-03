@@ -10,7 +10,6 @@ class InitDataInvalid(Exception):
 
 
 def _secret_key(bot_token: str) -> bytes:
-    # HMAC-SHA256(bot_token, "WebAppData")
     return hmac.new(b"WebAppData", bot_token.encode(), hashlib.sha256).digest()
 
 
@@ -23,6 +22,8 @@ def validate_init_data(init_data: str, bot_token: str, max_age_seconds: int = 24
     if not recv_hash:
         raise InitDataInvalid("Missing hash")
 
+    # Важно: разделитель должен быть "
+"
     data_check_string = "
 ".join(f"{k}={v}" for k, v in sorted(pairs.items()))
 
