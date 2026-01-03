@@ -1,15 +1,16 @@
-# исправьте строку 23import hmac
-git add 
-backend/app/core/tma_init_data.pyimport 
-hashlib from urllib.parse import parse_qsl 
-git commit -m "Fix tma_init_data 
-data_check_string"
-git push
+import hmac
+import hashlib
+import time
+import json
+from urllib.parse import parse_qsl
+
+
 class InitDataInvalid(Exception):
     pass
 
 
 def _secret_key(bot_token: str) -> bytes:
+    # HMAC-SHA256(bot_token, "WebAppData")
     return hmac.new(b"WebAppData", bot_token.encode(), hashlib.sha256).digest()
 
 
@@ -21,9 +22,18 @@ def validate_init_data(init_data: str, bot_token: str, max_age_seconds: int = 24
     recv_hash = pairs.pop("hash", None)
     if not recv_hash:
         raise InitDataInvalid("Missing hash")
-        raise InitDataInvalid("Bad hash")
+
     data_check_string = "
-    ".join(f"{k}={v}" for k, v in sorted(pairs.items()))
+".join(f"{k}={v}" for k, v in sorted(pairs.items()))
+
+    calc_hash = hmac.new(
+        _secret_key(bot_token),
+        data_check_string.encode(),
+        hashlib.sha256
+    ).hexdigest()
+
+    if calc_hash != recv_hash:
+        raise InitDataInvalid("Bad hash")
 
     try:
         auth_date = int(pairs.get("auth_date", "0"))
@@ -31,11 +41,9 @@ def validate_init_data(init_data: str, bot_token: str, max_age_seconds: int = 24
         auth_date = 0
 
     if auth_date and max_age_seconds:
-        import time
         if time.time() - auth_date > max_age_seconds:
             raise InitDataInvalid("initData expired")
 
-    import json
     user_raw = pairs.get("user")
     user = json.loads(user_raw) if user_raw else None
 
