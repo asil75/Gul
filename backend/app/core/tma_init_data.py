@@ -1,8 +1,10 @@
-import hmac
-import hashlib
-from urllib.parse import parse_qsl
-
-
+# исправьте строку 23import hmac
+git add 
+backend/app/core/tma_init_data.pyimport 
+hashlib from urllib.parse import parse_qsl 
+git commit -m "Fix tma_init_data 
+data_check_string"
+git push
 class InitDataInvalid(Exception):
     pass
 
@@ -19,14 +21,9 @@ def validate_init_data(init_data: str, bot_token: str, max_age_seconds: int = 24
     recv_hash = pairs.pop("hash", None)
     if not recv_hash:
         raise InitDataInvalid("Missing hash")
-
-    data_check_string = "
-".join(f"{k}={pairs[k]}" for k in sorted(pairs.keys()))
-    secret_key = _secret_key(bot_token)
-    calc_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
-
-    if not hmac.compare_digest(calc_hash, recv_hash):
         raise InitDataInvalid("Bad hash")
+    data_check_string = "
+    ".join(f"{k}={v}" for k, v in sorted(pairs.items()))
 
     try:
         auth_date = int(pairs.get("auth_date", "0"))
