@@ -95,8 +95,10 @@ async def update_order(
             parts.append("paid_at=NULL")
 
     if log_add:
-        parts.append(f"log = COALESCE(log,'') || ${i}"); vals.append(f"[{ts}] {log_add}
-"); i += 1
+    parts.append(f"log = COALESCE(log,'') || ${i}")
+    vals.append(f"[{ts}] {log_add}
+")
+    i += 1
 
     if not parts:
         return
