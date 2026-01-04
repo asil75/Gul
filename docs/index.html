@@ -2,65 +2,425 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Gul Mini App</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="style.css" />
+  
+  <style>
+    /* === СТИЛИ (бывший style.css) === */
+    body { 
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+        margin: 0; 
+        background: #0f0f12; 
+        color: #fff; 
+        -webkit-font-smoothing: antialiased;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 16px; }
+    
+    .card { 
+        background: #1b1b22; 
+        padding: 16px; 
+        border-radius: 14px; 
+        margin: 12px 0; 
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2); 
+    }
+    
+    .hidden { display: none !important; }
+    
+    h1, h2, h3 { margin-top: 0; font-weight: 700; }
+    h1 { color: #2a5fff; }
+    
+    label { display: block; margin-top: 12px; color: #aaa; font-size: 14px; margin-bottom: 4px; }
+
+    input, select { 
+        width: 100%; 
+        padding: 14px; 
+        box-sizing: border-box; 
+        border-radius: 12px; 
+        border: 1px solid #333; 
+        background: #111; 
+        color: #fff; 
+        font-size: 16px; /* Важно для iOS, чтобы не приближало экран */
+        outline: none;
+        transition: border-color 0.2s;
+    }
+    
+    input:focus, select:focus { border-color: #2a5fff; }
+    
+    button { 
+        width: 100%;
+        padding: 14px; 
+        border-radius: 12px; 
+        border: 0; 
+        background: #2a5fff; 
+        color: #fff; 
+        cursor: pointer; 
+        font-weight: 600;
+        font-size: 15px;
+        transition: opacity 0.2s, transform 0.1s;
+        margin-top: 10px;
+    }
+    button:active { opacity: 0.8; transform: scale(0.98); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    
+    .secondary-btn { background: #333; }
+    
+    .row { display: flex; gap: 10px; margin-top: 12px; }
+    
+    pre { 
+        white-space: pre-wrap; 
+        background: #000; 
+        padding: 12px; 
+        border-radius: 8px; 
+        font-size: 12px; 
+        color: #4f4; 
+        border: 1px solid #333;
+    }
+    
+    .order-item {
+        background: #25252e;
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        border-left: 4px solid #2a5fff;
+    }
+
+    /* Блок ошибок */
+    #error-log { color: #ffadad; background: #3a1111; padding: 10px; border-radius: 8px; margin-bottom: 10px; font-family: monospace; font-size: 11px; word-break: break-all; }
+  </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>Gul</h1>
+    
+    <!-- Заголовок -->
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1>Gul Delivery</h1>
+        <div id="userInfo" style="font-size: 12px; color: #aaa; text-align: right;"></div>
+    </div>
 
-    <div id="status" class="card">Загрузка...</div>
+    <!-- Лог ошибок (скрыт по умолчанию) -->
+    <div id="error-log" class="hidden"></div>
 
+    <!-- Статус загрузки -->
+    <div id="status" class="card" style="text-align: center; color: #888;">
+        Инициализация...
+    </div>
+
+    <!-- ЭКРАН 1: РЕГИСТРАЦИЯ -->
     <div id="reg" class="card hidden">
       <h2>Регистрация</h2>
-      <label>Роль
-        <select id="role">
-          <option value="shop">Магазин</option>
-          <option value="courier">Курьер</option>
-        </select>
-      </label>
+      <p style="color: #ccc; font-size: 14px; margin-bottom: 20px;">
+          Чтобы начать работу, укажите вашу роль и номер телефона.
+      </p>
+      
+      <label>Ваша роль</label>
+      <select id="role">
+          <option value="shop">Магазин (Отправитель)</option>
+          <option value="courier">Курьер (Исполнитель)</option>
+      </select>
 
-      <div class="row">
-        <button id="btnContact">Подтвердить телефон</button>
-      </div>
+      <label>Номер телефона</label>
+      <input id="phone" type="tel" placeholder="+996 555 000 000" />
+      
+      <button id="btnContact" class="secondary-btn" style="margin-top: 5px; font-size: 12px; padding: 8px;">
+        ℹ️ Ввести вручную (WebApp не отдаёт номер)
+      </button>
 
-      <label>Телефон (если не подтвердили)
-        <input id="phone" placeholder="+7..." />
-      </label>
-
-      <div class="row">
-        <button id="btnRegister">Сохранить</button>
-      </div>
-    </div>
-
-    <div id="app" class="card hidden">
-      <h2>Заказы</h2>
-      <div class="row">
-        <button id="btnReload">Обновить</button>
-        <button id="btnNew" class="hidden">Новый заказ</button>
-      </div>
-      <pre id="orders"></pre>
-
-      <div id="newOrder" class="hidden">
-        <h3>Новый заказ</h3>
-        <input id="from_address" placeholder="Адрес отправителя" />
-        <input id="shop_contact" placeholder="Контакт магазина" />
-        <input id="to_address" placeholder="Адрес клиента" />
-        <input id="client_name" placeholder="Имя клиента" />
-        <input id="client_phone" placeholder="Телефон клиента" />
-        <input id="price" placeholder="Цена" />
-        <button id="btnCreate">Создать</button>
+      <div style="margin-top: 20px;">
+        <button id="btnRegister">Зарегистрироваться</button>
       </div>
     </div>
 
-    <div class="card">
-      <small>Backend URL задаётся в <code>config.js</code> (после деплоя Render).</small>
+    <!-- ЭКРАН 2: СПИСОК ЗАКАЗОВ -->
+    <div id="app" class="hidden">
+      
+      <div class="row">
+        <button id="btnNew" class="hidden" style="background: #28a745;">+ Создать заказ</button>
+        <button id="btnReload" class="secondary-btn" style="width: auto;">↻</button>
+      </div>
+      
+      <h3 style="margin-top: 20px;">Активные заказы</h3>
+      <div id="orders-container">
+         <div style="text-align: center; color: #555; padding: 20px;">Загрузка списка...</div>
+      </div>
+    </div>
+
+    <!-- ЭКРАН 3: СОЗДАНИЕ ЗАКАЗА (Модальное окно) -->
+    <div id="newOrder" class="card hidden" style="border: 1px solid #444;">
+      <h3>Новый заказ</h3>
+      
+      <label>Откуда забрать (Адрес/Магазин)</label>
+      <input id="from_address" placeholder="Например: ЦУМ, 1 этаж" />
+      
+      <label>Контакт отправителя</label>
+      <input id="shop_contact" placeholder="+996..." />
+      
+      <label>Куда доставить</label>
+      <input id="to_address" placeholder="Улица, дом" />
+      
+      <label>Кв / Офис / Этаж</label>
+      <input id="to_apt" placeholder="Необязательно" />
+      
+      <label>Имя клиента</label>
+      <input id="client_name" placeholder="Имя" />
+      
+      <label>Телефон клиента</label>
+      <input id="client_phone" type="tel" placeholder="+996..." />
+      
+      <label>Цена доставки (сом)</label>
+      <input id="price" type="number" placeholder="150" />
+      
+      <div class="row">
+        <button id="btnCreate">Создать заказ</button>
+      </div>
+      <div class="row">
+        <button id="btnCancel" class="secondary-btn">Отмена</button>
+      </div>
+    </div>
+
+    <div style="margin-top: 40px; text-align: center; color: #333; font-size: 11px;">
+       Gul Delivery v1.1
     </div>
   </div>
 
-  <script src="config.js"></script>
-  <script src="app.js"></script>
+  <script>
+    // === КОНФИГУРАЦИЯ (бывший config.js) ===
+    window.BACKEND_URL = "https://gul-rtg0.onrender.com"; // Убедитесь, что это ваш актуальный адрес Render
+
+    // === ЛОГИКА (бывший app.js) ===
+    const tg = window.Telegram?.WebApp;
+    
+    // Элементы
+    const statusEl = document.getElementById('status');
+    const errorLogEl = document.getElementById('error-log');
+    const userInfoEl = document.getElementById('userInfo');
+    
+    const regEl = document.getElementById('reg');
+    const appEl = document.getElementById('app');
+    const newOrderEl = document.getElementById('newOrder');
+    const ordersContainer = document.getElementById('orders-container');
+    
+    const btnRegister = document.getElementById('btnRegister');
+    const btnReload = document.getElementById('btnReload');
+    const btnNew = document.getElementById('btnNew');
+    const btnCreate = document.getElementById('btnCreate');
+    const btnCancel = document.getElementById('btnCancel');
+
+    // === УТИЛИТЫ ===
+
+    function showError(msg) {
+        console.error(msg);
+        errorLogEl.classList.remove('hidden');
+        errorLogEl.innerHTML = `<div>⚠️ ${msg}</div>` + errorLogEl.innerHTML;
+        statusEl.textContent = "Ошибка сети или сервера";
+    }
+
+    // Инициализация TG
+    try {
+        tg?.ready();
+        tg?.expand();
+        // Красим шапку телеграма в черный
+        if (tg) {
+            tg.setHeaderColor('#0f0f12');
+            tg.setBackgroundColor('#0f0f12');
+        }
+    } catch (e) { console.error(e); }
+
+    function getAuthHeader() {
+        const initData = tg?.initData || '';
+        return { 'Authorization': 'tma ' + initData };
+    }
+
+    async function api(path, opts = {}) {
+        const baseUrl = (window.BACKEND_URL || '').replace(/\/$/, '');
+        const url = baseUrl + path;
+        
+        const headers = { 
+            ...(opts.headers || {}), 
+            ...getAuthHeader(), 
+            'Content-Type': 'application/json' 
+        };
+
+        try {
+            const res = await fetch(url, { ...opts, headers });
+            const txt = await res.text();
+            
+            let data;
+            try { data = JSON.parse(txt); } catch { data = { raw: txt }; }
+
+            if (!res.ok) {
+                throw new Error(data.detail || JSON.stringify(data));
+            }
+            return data;
+        } catch (e) {
+            if (e.message.includes('Failed to fetch')) {
+                throw new Error('Сервер недоступен. Если вы используете Render Free, подождите 1 минуту, пока сервер "проснется".');
+            }
+            throw e;
+        }
+    }
+
+    // === ОСНОВНОЙ ПРОЦЕСС ===
+
+    async function boot() {
+        statusEl.classList.remove('hidden');
+        statusEl.textContent = 'Подключение к серверу...';
+        
+        try {
+            // 1. Проверяем авторизацию
+            const me = await api('/api/me');
+            
+            // Скрываем статус загрузки, всё ок
+            statusEl.classList.add('hidden');
+            
+            userInfoEl.innerHTML = `ID: ${me.tg_id}<br>${me.role === 'shop' ? 'Магазин' : (me.role === 'courier' ? 'Курьер' : 'Нет роли')}`;
+
+            if (!me.role) {
+                // Роли нет -> Регистрация
+                regEl.classList.remove('hidden');
+                appEl.classList.add('hidden');
+            } else {
+                // Роль есть -> Приложение
+                regEl.classList.add('hidden');
+                appEl.classList.remove('hidden');
+
+                if (me.role === 'shop') {
+                    btnNew.classList.remove('hidden');
+                } else {
+                    btnNew.classList.add('hidden');
+                }
+
+                loadOrders();
+            }
+        } catch (e) {
+            showError(e.message);
+        }
+    }
+
+    // === ФУНКЦИИ ===
+
+    async function loadOrders() {
+        ordersContainer.innerHTML = '<div style="text-align:center; padding:10px; color:#666;">Обновление...</div>';
+        try {
+            const data = await api('/api/orders');
+            const items = data.items || [];
+            
+            ordersContainer.innerHTML = ''; // Очистить
+
+            if (items.length === 0) {
+                ordersContainer.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">Список заказов пуст</div>';
+                return;
+            }
+
+            // Рендер заказов
+            items.forEach(order => {
+                const el = document.createElement('div');
+                el.className = 'order-item';
+                
+                // Статус цвета
+                let statusColor = '#888';
+                if (order.status === 'new') statusColor = '#00bc8c'; // Зеленый
+                if (order.status === 'taken') statusColor = '#f39c12'; // Желтый
+                if (order.status === 'done') statusColor = '#3498db'; // Синий
+
+                el.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; margin-bottom: 6px;">
+                        <span style="font-weight:bold; color:#fff;">Заказ #${order.id}</span>
+                        <span style="color:${statusColor}; font-weight:bold; text-transform:uppercase; font-size:12px;">${order.status}</span>
+                    </div>
+                    <div style="font-size: 13px; color: #ccc; line-height: 1.5;">
+                        <div>📍 <b>Откуда:</b> ${order.from_address}</div>
+                        <div>🏁 <b>Куда:</b> ${order.to_address}</div>
+                        ${order.price ? `<div style="margin-top:4px; color:#fff;">💰 <b>Цена:</b> ${order.price} сом</div>` : ''}
+                        ${order.client_phone ? `<div>📞 ${order.client_phone}</div>` : ''}
+                    </div>
+                `;
+                ordersContainer.appendChild(el);
+            });
+
+        } catch (e) {
+            ordersContainer.innerHTML = `<div style="color:red; text-align:center;">Ошибка: ${e.message}</div>`;
+        }
+    }
+
+    // === КНОПКИ ===
+
+    btnRegister.onclick = async () => {
+        const role = document.getElementById('role').value;
+        const phone = document.getElementById('phone').value.trim();
+
+        if (!phone) return alert('Введите номер телефона');
+
+        btnRegister.disabled = true;
+        btnRegister.textContent = 'Регистрация...';
+
+        try {
+            await api('/api/auth/register', { 
+                method: 'POST', 
+                body: JSON.stringify({ role, phone }) 
+            });
+            // Успех -> перезапуск
+            location.reload();
+        } catch (e) {
+            alert('Ошибка: ' + e.message);
+            btnRegister.disabled = false;
+            btnRegister.textContent = 'Зарегистрироваться';
+        }
+    };
+
+    btnReload.onclick = loadOrders;
+
+    btnNew.onclick = () => {
+        appEl.classList.add('hidden');
+        newOrderEl.classList.remove('hidden');
+    };
+
+    btnCancel.onclick = () => {
+        newOrderEl.classList.add('hidden');
+        appEl.classList.remove('hidden');
+    };
+
+    btnCreate.onclick = async () => {
+        const payload = {
+            from_address: document.getElementById('from_address').value,
+            shop_contact: document.getElementById('shop_contact').value,
+            to_address: document.getElementById('to_address').value,
+            to_apt: document.getElementById('to_apt').value,
+            client_name: document.getElementById('client_name').value,
+            client_phone: document.getElementById('client_phone').value,
+            price: parseFloat(document.getElementById('price').value || '0')
+        };
+
+        if (!payload.from_address || !payload.to_address) {
+            return alert('Заполните адреса!');
+        }
+
+        btnCreate.disabled = true;
+        btnCreate.textContent = 'Создание...';
+
+        try {
+            await api('/api/orders', { method: 'POST', body: JSON.stringify(payload) });
+            alert('Заказ успешно создан!');
+            
+            // Очистка формы
+            document.querySelectorAll('#newOrder input').forEach(i => i.value = '');
+            
+            // Возврат
+            newOrderEl.classList.add('hidden');
+            appEl.classList.remove('hidden');
+            loadOrders();
+        } catch (e) {
+            alert('Ошибка создания: ' + e.message);
+        } finally {
+            btnCreate.disabled = false;
+            btnCreate.textContent = 'Создать заказ';
+        }
+    };
+
+    // Старт
+    boot();
+  </script>
 </body>
 </html>
+
+
