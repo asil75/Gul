@@ -84,26 +84,39 @@ async def update_order(
     i = 1
 
     if status is not None:
-        parts.append(f"status=${i}"); vals.append(status); i += 1
+        parts.append(f"status=${i}")
+        vals.append(status)
+        i += 1
+    
     if courier_tg_id is not None:
-        parts.append(f"courier_tg_id=${i}"); vals.append(courier_tg_id if courier_tg_id != 0 else None); i += 1
+        parts.append(f"courier_tg_id=${i}")
+        # Если 0, ставим NULL, иначе ID
+        vals.append(courier_tg_id if courier_tg_id != 0 else None)
+        i += 1
+    
     if paid_to_courier is not None:
-        parts.append(f"paid_to_courier=${i}"); vals.append(paid_to_courier); i += 1
+        parts.append(f"paid_to_courier=${i}")
+        vals.append(paid_to_courier)
+        i += 1
+        
         if paid_to_courier == PAYMENT_STATUS_CONFIRMED:
-            parts.append(f"paid_at=${i}"); vals.append(ts); i += 1
+            parts.append(f"paid_at=${i}")
+            vals.append(ts)
+            i += 1
         elif paid_to_courier == PAYMENT_STATUS_UNPAID:
             parts.append("paid_at=NULL")
 
     if log_add:
-    parts.append(f"log = COALESCE(log,'') || ${i}")
-    vals.append(f"[{ts}] {log_add}
-")
-    i += 1
+        # Исправлена ошибка отступа (IndentationError) здесь
+        parts.append(f"log = COALESCE(log,'') || ${i}")
+        vals.append(f"\n[{ts}] {log_add}")
+        i += 1
 
     if not parts:
         return
 
     vals.append(order_id)
+    # Используем ${i}, так как i увеличился после последнего добавления параметра
     q = f"UPDATE orders SET {', '.join(parts)} WHERE id=${i}"
 
     async with pool().acquire() as con:
