@@ -1,5 +1,7 @@
 import logging
+
 from fastapi import FastAPI, Request, Header, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.settings import settings
 from app.db.db import init_pool, close_pool
@@ -11,9 +13,38 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("gul")
 
 app = FastAPI(title="Gul MiniApp Backend")
+
+# CORS для фронта на GitHub Pages
+# Важно: origin — это только схема+домен, без /Gul
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://asil75.github.io",
+    ],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Подключаем API роуты (/api/...)
 app.include_router(api_router)
 
 bot_app = None
+
+
+@app.get("/")
+async def root():
+    return {"ok": True, "service": "gul-backend"}
+
+
+@app.get("/ping")
+async def ping():
+    return {"ok": True}
+
+
+@app.get("/health")
+async def health():
+    return {"ok": True}
 
 
 @app.on_event("startup")
@@ -50,9 +81,4 @@ async def telegram_webhook(
 
     update = Update.de_json(payload, bot_app.bot)
     await bot_app.process_update(update)
-    return {"ok": True}
-
-
-@app.get("/health")
-async def health():
     return {"ok": True}
