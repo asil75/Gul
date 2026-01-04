@@ -9,8 +9,7 @@ PAYMENT_STATUS_CONFIRMED = 2
 
 async def create_order(data: dict) -> int:
     created_at = str(int(time.time()))
-    log_text = f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Заказ создан.
-"
+    log_text = f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Заказ создан."
     initial_status = "taken" if data.get("return_for") else "new"
 
     async with pool().acquire() as con:
